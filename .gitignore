@@ -1,2 +1,2 @@
 ############## Ignoring unrequired files #######################
-bash.exe.stackdump
+*/bash.exe.stackdump
