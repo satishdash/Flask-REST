@@ -13,11 +13,11 @@ from datetime import datetime
 import json
 
 from exceptions.exception import ProjectException
-import properties
+from models import properties
 
-class Experience(object):
-
-        def __init__(self, projectJson):
+class Project(object):
+	
+	def __init__(self, projectJson):
 		self.projectJson = projectJson
 		self.projectList = None
 	

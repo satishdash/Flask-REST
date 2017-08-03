@@ -10,10 +10,12 @@
 ##################################################################################################
 
 from flask import Flask, jsonify, request
+import json
 
 from error import Error
 
 import httpstatus
+from models.candidate import Candidate
 
 # app variable to run this as a flask application
 app = Flask(__name__)
@@ -30,21 +32,20 @@ def root():
 @app.route("/add-candidate", methods=["POST","GET"])
 def addCandidate():
 	if request.method == "POST":
-		pass 
-	err = Error("The request type is incorrect. Only POST requests are allowed.", httpstatus.BAD_REQUEST)
-	return jsonify(err.serialize()), httpstatus.BAD_REQUEST
-
+		return "Success!", httpstatus.ACCEPTED
+	elif request.method == "GET":
+		return jsonify(json.loads(open("sample.json").read())), httpstatus.SUCCESS
 
 # route: GET /get-all-candidates
 
 
-# route: GET /get-candidate/<string:candidateName>
+# route: GET /get-candidate?<string:candidate Name>&<string:domain>&<string:years>
 
 
-# route: POST /edit-candidate-experience/<int:candidateId>
+# route: POST /edit-candidate-experience/<int:candidate ID>
 
 
-# route: DELETE /remove-candidate/<string:candidateName>
+# route: DELETE /remove-candidate/<int:candidate ID>
 
 if __name__ == "__main__":
 	app.run(debug=True)

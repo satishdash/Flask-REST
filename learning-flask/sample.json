@@ -1,0 +1,19 @@
+{
+	"_comment":"DO NOT INCLUDE THIS KEY. This is a sample payload, below keys are mandatory.",
+	"first_name": "<candidate's-first-name>",
+	"last_name" : "<candidate's-last-name>",
+	"experience" : [
+			{
+				"domain": "<domain name 1>",
+				"years" : "<NUMBER>",
+				"projects" : [
+						{
+							"name" : "<project name> [OPTIONAL]",
+							"description": "<short description of the project>",
+							"start_date" : "<MONTH-YYYY>",
+							"end_date" : "<MONTH_YYYY> [OPTIONAL]"
+						}
+					]
+			}
+		]
+}

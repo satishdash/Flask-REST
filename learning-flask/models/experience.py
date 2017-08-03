@@ -10,9 +10,9 @@
 
 import json
 
-from project import Project
-from exceptions.exception import ExperienceException, ProjectException
-import properties
+from models.project import Project
+from exceptions.exception import ExperienceException
+from models import properties
 
 class Experience(object):
 	
@@ -51,11 +51,11 @@ class Experience(object):
 					
 					# validate projects in this domain
 					if proj in exp and exp.get(proj):
-						Project prj = Project(json.dumps(proj))
+						prj = Project(json.dumps(proj))
 						return prj.isProjectValid()
 					else:
 						raise ExperienceException(proj + " key is missing in this experience. \
-						Please add a valid list of projects. {}".format(properties.SAMPLE_API_REF)
+						Please add a valid list of projects. {}".format(properties.SAMPLE_API_REF))
 			else:
 				raise ExperienceException("Experience list is invalid or empty. Please provide a valid experience list.")
 		else:

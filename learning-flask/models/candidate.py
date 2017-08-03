@@ -10,8 +10,8 @@
 
 import json
 
-from experience import Experience
-from exceptions.exception import CandidateException, ExperienceException, ProjectException
+from models.experience import Experience
+from exceptions.exception import CandidateException
 
 class Candidate(object):
 
@@ -29,31 +29,32 @@ class Candidate(object):
 				Please post a correctly formatted JSON.")
 			fname = "first_name"
 			lname = "last_name"
-			if fname in self.candidateDict and self.candidateDict.get(fname):
+			if self.candidateDict.get(fname):
 				print(fname, "is present in the profile.")
 			else:
-				raise CandidateException("'" + fname + "'" + " key is missing from the profile. Please do provide a " + fname )
+				raise CandidateException("'" + fname + "'" + " key or value is missing from the profile. \
+				Please do provide a " + fname )
 				
-			if "last_name" in self.candidateDict:
+			if self.candidateDict.get(lname):
 				print(lname, "is present in the profile.")
 			else:
-				raise CandidateException("'" + lname + "'" + " key is missing from the profile. Please do provide a " + lname )
+				raise CandidateException("'" + lname + "'" + " key or value is missing from the profile. \
+				Please do provide a " + lname )
 		return True
 	
 	def _validateCandidateExp(self):
 		# check if experience is present
 		expe = "experience"
 		if self.candidateDict.get(expe):
-			Experience exp = Experience(json.dumps(self.candidateDict.get(expe)))
+			exp = Experience(json.dumps(self.candidateDict.get(expe)))
 			return exp.isExperienceValid()
 		else:
-			raise CandidateException("'" + expe + "'" + " list is missing from Candidate profile. Please add an experience list.")
+			raise CandidateException("'" + expe + "'" + " list is missing from the Candidate profile. \
+			Please add an experience list.")
 
 
 
 	def isProfileValid(self):
 		return self._validateCandidateName() and self._validateCandidateExp()
 		
-
-
 
