@@ -43,7 +43,7 @@ class Candidate(object):
 	def _validateCandidateExp(self):
 		# check if experience is present
 		expe = "experience"
-		if expe in self.candidateDict and self.candidateDict.get(expe):
+		if self.candidateDict.get(expe):
 			Experience exp = Experience(json.dumps(self.candidateDict.get(expe)))
 			return exp.isExperienceValid()
 		else:
@@ -52,8 +52,7 @@ class Candidate(object):
 
 
 	def isProfileValid(self):
-		if self._validateCandidateName():
-			return self._validateCandidateExp()
+		return self._validateCandidateName() and self._validateCandidateExp()
 		
 
 

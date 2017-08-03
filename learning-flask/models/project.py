@@ -2,7 +2,7 @@
 
 ##########################################################################
 #
-# A model class for validating - Experience
+# A model class for validating - Project
 #
 # @author : Satish Dash
 #

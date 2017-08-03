@@ -10,7 +10,7 @@
 
 import json
 
-from project import project
+from project import Project
 from exceptions.exception import ExperienceException, ProjectException
 import properties
 
@@ -18,7 +18,7 @@ class Experience(object):
 	
 	def __init__(self, experienceJson):
 		self.experienceJson = experienceJson
-		self.experienceList = list()
+		self.experienceList = None
 	
 
 	def _validateCandidateExp(self):
