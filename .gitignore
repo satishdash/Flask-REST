@@ -2,3 +2,4 @@
 */bash.exe.stackdump
 */sh.exe.stackdump
 */__pycache__
+*/*.pyc
