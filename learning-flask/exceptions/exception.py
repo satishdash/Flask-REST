@@ -30,3 +30,10 @@ class ProjectException(Exception):
 		super(ProjectException, self).__init__(message)
 		self.message = message
 		print(self.__class__.__name__ , self.message)
+
+
+class DBException(Exception):
+	def __init__(self, message):
+		super(DBException, self).__init__(message)
+		self.message = message
+		print(self.__class__.__name__ , self.message)
