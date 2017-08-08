@@ -77,7 +77,22 @@ def addCandidate():
 		return jsonify(json.loads(open("sample.json").read())), httpstatus.SUCCESS
 
 # route: GET /get-all-candidates
+@app.route("/get-all-candidates")
+def getAllCandidates():
+	candidates = []
+	try:
+		mongodb = MongoDB()
+		candidateCol = mongodb.getCollection()
 
+		# fetch all candidates from DB
+		cur = candidateCol.find().sort([("_id", 1)])
+		for c in cur:
+			candidates.append(c)
+	except Exception as e:
+		err = Error(e.args[0] + ": Internal server error has occurred.", httpstatus.SERVER_ERROR)
+		return jsonify(err.serialize()), httpstatus.SERVER_ERROR
+	else:
+		return jsonify(candidates), httpstatus.SUCCESS
 
 # route: GET /get-candidate?<string:candidate Name>&<string:domain>&<string:years>
 
