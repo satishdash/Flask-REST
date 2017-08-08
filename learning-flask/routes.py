@@ -71,7 +71,7 @@ def addCandidate():
 			return jsonify(err.serialize()), httpstatus.BAD_REQUEST
 		except Exception as exp:
 			#err = Error("Internal server error has occurred.", httpstatus.SERVER_ERROR)
-			err = Error(exp.args[0] + ": request body is of type:" + str(type(body)) , httpstatus.SERVER_ERROR)
+			err = Error(exp.args[0], httpstatus.SERVER_ERROR)
 			return jsonify(err.serialize()), httpstatus.SERVER_ERROR
 			
 		return jsonify(response), httpstatus.SUCCESS
