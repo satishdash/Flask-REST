@@ -10,7 +10,7 @@
 
 import json
 
-from models.project import Project
+from models.project import Projects
 from exceptions.exception import ExperienceException
 from models import properties
 
@@ -45,14 +45,17 @@ class Experience(object):
 						try:
 							print( years + " of domain expertise is : {}".format(float(exp[years])))
 						except:
-							raise ExperienceException(years + " format is incorrect. Must be a number.")
+							raise ExperienceException(years + "{} format is incorrect. Must be a number.".format(exp[years]))
 					else:
 						raise ExperienceException(years + " key is missing or value is invalid (must be > 0).")
 					
 					# validate projects in this domain
 					if exp.get(proj):
-						prj = Project(json.dumps(exp[proj]))
-						return prj.isProjectValid()
+						prj = Projects(json.dumps(exp[proj]))
+						if prj.isProjectValid():
+							continue
+						else:
+							pass
 					else:
 						raise ExperienceException("'" + proj + "' key is missing in this experience. "
 						+ "Please add a valid list of projects. {}".format(properties.SAMPLE_API_REF))

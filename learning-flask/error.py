@@ -21,7 +21,7 @@ class Error(object):
 	def serialize(self):
 		return {
 			'code': self.code,
-			'error': self.message
+			'message': self.message
 		}
 
 	def __str__(self):

@@ -15,7 +15,7 @@ import json
 from exceptions.exception import ProjectException
 from models import properties
 
-class Project(object):
+class Projects(object):
 	
 	def __init__(self, projectJson):
 		self.projectJson = projectJson
@@ -48,22 +48,22 @@ class Project(object):
 						try:
 							sd = datetime.strptime(p.get(start_date), "%B-%Y")
 						except Exception as e:
-							raise ProjectException(start_date + " is not in the required format. "
-							+ "or the value is missing, {}.format=<MONTH-YYYY>".format(e.args[0]))
+							raise ProjectException(start_date + " is not in the required format, "
+							+ "Value={}. Required format=<Month-YYYY>".format(p.get(start_date)))
 
 					else:
 						raise ProjectException(start_date + " key is missing from this project "
-						+ " or value is empty. {}".format(start_date))
+						+ " or value is empty. {}".format(p.get(start_date)))
 
 					if p.get(end_date):
 						try:
 							ed = datetime.strptime(p.get(end_date), "%B-%Y")
 						except:
-							raise ProjectException(end_date + " is not in the required format. "
-							+ "or the value is missing.format=<MONTH-YYYY>")
+							raise ProjectException(end_date + " is not in the required format, "
+							+ "Value={}. Required format=<Month-YYYY>".format(p.get(end_date)))
 
 			else:
-				raise ProjectException("List of projects is in incorrect format. {}".format(properties.SAMPLE_API_REF))
+				raise ProjectException("List of projects is in incorrect format or is empty. {}".format(properties.SAMPLE_API_REF))
 
 		else:
 			raise ProjectException("List of projects is missing from the experience profile.")
