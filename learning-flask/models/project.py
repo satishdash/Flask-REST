@@ -27,8 +27,8 @@ class Project(object):
 			try:
 				self.projectList = json.loads(self.projectJson)
 			except:
-				raise ProjectException("Project list mentioned is in incorrect JSON format. Please \
-				provide a valid list of project in the experience section. {}".format(properties.SAMPLE_API_REF))
+				raise ProjectException("Project list mentioned is in incorrect JSON format. "
+				+ "Please provide a valid list of project in the experience section. {}".format(properties.SAMPLE_API_REF))
 
 			name = "name"
 			desc = "description"
@@ -38,37 +38,36 @@ class Project(object):
 			# loop through all the projects if present
 			if isinstance(self.projectList, list) and len(self.projectList) > 0:
 				for p in self.projectList:
-					if desc in p and p.get(desc):
+					if p.get(desc):
 						pass
 					else:
-						raise ProjectException(desc + " key is missing from this project \
-						or value is empty. {}".format(p))
+						raise ProjectException(desc + " key is missing from this project "
+						+ "or value is empty. {}".format(p))
 
 					if p.get(start_date):
 						try:
-							sd = datetime.strptime(start_date, "%B-%Y")
-						except:
-							raise ProjectException(start_date + " is not in the required format.\
-							or the value is missing.format=<MONTH-YYYY>")
+							sd = datetime.strptime(p.get(start_date), "%B-%Y")
+						except Exception as e:
+							raise ProjectException(start_date + " is not in the required format. "
+							+ "or the value is missing, {}.format=<MONTH-YYYY>".format(e.args[0]))
 
 					else:
-						raise ProjectException(start_date + " key is missing from this project \
-						or value is empty. {}".format(start_date))
+						raise ProjectException(start_date + " key is missing from this project "
+						+ " or value is empty. {}".format(start_date))
 
 					if p.get(end_date):
 						try:
-							ed = datetime.strptime(end_date, "%B-%Y")
+							ed = datetime.strptime(p.get(end_date), "%B-%Y")
 						except:
-							raise ProjectException(end_date + " is not in the required format.\
-							or the value is missing.format=<MONTH-YYYY>")
+							raise ProjectException(end_date + " is not in the required format. "
+							+ "or the value is missing.format=<MONTH-YYYY>")
 
 			else:
-				raise ProjectException("List of projects is in incorrect format. {}\
-				".format(properties.SAMPLE_API_REF))
+				raise ProjectException("List of projects is in incorrect format. {}".format(properties.SAMPLE_API_REF))
 
 		else:
 			raise ProjectException("List of projects is missing from the experience profile.")
-
+		return True
 
 	def isProjectValid(self):
 		return self._validateProjectList()

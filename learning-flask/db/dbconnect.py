@@ -35,7 +35,8 @@ class MongoDB(Borg):
 		else:
 			self.config = ConfigParser()
 			try:
-				self.cfg = self.config.read("dbconfig.ini")
+				ini_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dbconfig.ini")
+				self.cfg = self.config.read(ini_file)
 				self.user = self.config.get("mongodb", "username")
 				self.pwd = self.config.get("mongodb", "password")
 				self.conn = self.config.get("mongodb", "connection")
@@ -44,7 +45,8 @@ class MongoDB(Borg):
 				self.connection = self.conn.format(self.user, self.pwd, self.dbname)
 			except Exception as e:
 				print("exception: " + e.args[0]) 
-				raise DBException("Persistent storage configuration could not be formulated. Cannot proceed to get connection.")
+				raise DBException(str(e.args) + " Persistent storage configuration could not be formulated."
+				" Cannot proceed to get connection.")
 			try:
 				self.client = pm.MongoClient(self.connection, tz_aware=True)
 				#  update the connection object in the state permanently

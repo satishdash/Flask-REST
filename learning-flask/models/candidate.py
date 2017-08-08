@@ -25,8 +25,7 @@ class Candidate(object):
 			try:
 				self.candidateDict = json.loads(self.candidateJson)
 			except:
-				raise CandidateException("Candidature json is invalid. JSON is incorrect. \
-				Please post a correctly formatted JSON.")
+				raise CandidateException("Candidature json is invalid. JSON is incorrect. Please post a correctly formatted JSON.")
 			fname = "first_name"
 			lname = "last_name"
 			if self.candidateDict.get(fname):

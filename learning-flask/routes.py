@@ -9,12 +9,17 @@
 #
 ##################################################################################################
 
-from flask import Flask, jsonify, request
 import json
+import os
+import sys
+
+from flask import Flask, jsonify, request
 
 from error import Error
 
 import httpstatus
+from db.dbconnect import MongoDB
+from exceptions.exception import CandidateException , ExperienceException, ProjectException
 from models.candidate import Candidate
 
 # app variable to run this as a flask application
@@ -28,11 +33,37 @@ def root():
 	d = {"message": "Welcome! This is a flask web server"}
 	return jsonify(d)
 
+
 # route: POST /add-candidate
 @app.route("/add-candidate", methods=["POST","GET"])
 def addCandidate():
 	if request.method == "POST":
-		return "Success!", httpstatus.ACCEPTED
+		# get json body sent in the request
+		body = request.get_json(force=True)
+		print("Request body: " , body, file=sys.stdout)
+		print(type(body), file=sys.stdout)
+
+		response = {"message" : None}
+		# send body for validation
+		try:
+			candidate = Candidate(json.dumps(body))
+			if candidate.isProfileValid():
+				# store in DB
+				mongodb = MongoDB()
+				candidateCol = mongodb.getCollection()
+				candidateCol.insert_one(body)
+				response["message"] = "Requested profile is successfully added to the candidate entitlement."
+			else:
+				response["message"] = "Profile seems to be invalid. Needs correction(s). Please resend a valid profile."
+		except (CandidateException, ExperienceException, ProjectException) as exp:
+			err = Error(exp.args[0], httpstatus.BAD_REQUEST)
+			return jsonify(err.serialize()), httpstatus.BAD_REQUEST
+		except Exception as exp:
+			#err = Error("Internal server error has occurred.", httpstatus.SERVER_ERROR)
+			err = Error(exp.args[0], httpstatus.SERVER_ERROR)
+			return jsonify(err.serialize()), httpstatus.SERVER_ERROR
+			
+		return jsonify(response), httpstatus.SUCCESS
 	elif request.method == "GET":
 		return jsonify(json.loads(open("sample.json").read())), httpstatus.SUCCESS
 
@@ -48,4 +79,6 @@ def addCandidate():
 # route: DELETE /remove-candidate/<int:candidate ID>
 
 if __name__ == "__main__":
-	app.run(debug=True)
+	app.debug = True
+	app.run(host="0.0.0.0", port=5000)
+
