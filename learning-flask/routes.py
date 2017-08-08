@@ -13,7 +13,7 @@ import json
 import os
 import sys
 import uuid
-from threading import Lock
+from threading import RLock
 from flask import Flask, jsonify, request
 
 from error import Error
@@ -25,9 +25,6 @@ from models.candidate import Candidate
 
 # app variable to run this as a flask application
 app = Flask(__name__)
-
-# Auto-increment entity
-auto = 0
 
 
 # route: GET /
@@ -41,7 +38,6 @@ def root():
 # route: POST /add-candidate
 @app.route("/add-candidate", methods=["POST","GET"])
 def addCandidate():
-	global auto
 	if request.method == "POST":
 		# get json body sent in the request, comes as a dict.
 		body = request.get_json(force=True)
@@ -57,8 +53,10 @@ def addCandidate():
 				# store in DB
 				mongodb = MongoDB()
 				candidateCol = mongodb.getCollection()
-				lock = Lock()
+				lock = RLock()
+				auto = 0
 				with lock:
+					auto = candidateCol.count()
 					auto += 1
 				body["_id"] = str(auto)
 				candidateCol.insert_one(body)
