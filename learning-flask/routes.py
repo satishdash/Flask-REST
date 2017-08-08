@@ -12,7 +12,8 @@
 import json
 import os
 import sys
-
+import uuid
+from threading import Lock
 from flask import Flask, jsonify, request
 
 from error import Error
@@ -24,6 +25,9 @@ from models.candidate import Candidate
 
 # app variable to run this as a flask application
 app = Flask(__name__)
+
+# Auto-increment entity
+auto = 0
 
 
 # route: GET /
@@ -37,9 +41,11 @@ def root():
 # route: POST /add-candidate
 @app.route("/add-candidate", methods=["POST","GET"])
 def addCandidate():
+	global auto
 	if request.method == "POST":
-		# get json body sent in the request
+		# get json body sent in the request, comes as a dict.
 		body = request.get_json(force=True)
+
 		print("Request body: " , body, file=sys.stdout)
 		print(type(body), file=sys.stdout)
 
@@ -51,8 +57,13 @@ def addCandidate():
 				# store in DB
 				mongodb = MongoDB()
 				candidateCol = mongodb.getCollection()
+				lock = Lock()
+				with lock:
+					auto += 1
+				body["_id"] = str(auto)
 				candidateCol.insert_one(body)
 				response["message"] = "Requested profile is successfully added to the candidate entitlement."
+				response["candidate_id"] = auto
 			else:
 				response["message"] = "Profile seems to be invalid. Needs correction(s). Please resend a valid profile."
 		except (CandidateException, ExperienceException, ProjectException) as exp:
@@ -60,7 +71,7 @@ def addCandidate():
 			return jsonify(err.serialize()), httpstatus.BAD_REQUEST
 		except Exception as exp:
 			#err = Error("Internal server error has occurred.", httpstatus.SERVER_ERROR)
-			err = Error(exp.args[0], httpstatus.SERVER_ERROR)
+			err = Error(exp.args[0] + ": request body is of type:" + str(type(body)) , httpstatus.SERVER_ERROR)
 			return jsonify(err.serialize()), httpstatus.SERVER_ERROR
 			
 		return jsonify(response), httpstatus.SUCCESS
