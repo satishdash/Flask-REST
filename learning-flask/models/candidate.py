@@ -29,19 +29,12 @@ class Candidate(object):
 				raise CandidateException("Candidature json is invalid. JSON is incorrect. Please post a correctly formatted JSON. {}"\
 					.format(properties.SAMPLE_API_REF))
 			if isinstance(self.candidateDict, dict) and len(self.candidateDict) > 0:
-				fname = "first_name"
-				lname = "last_name"
+				fname = "name"
 				if self.candidateDict.get(fname):
 					print(fname, "is present in the profile.")
 				else:
 					raise CandidateException("'" + fname + "'" + " key or value is missing from the profile." \
-					+ " Please do provide a " + fname )
-					
-				if self.candidateDict.get(lname):
-					print(lname, "is present in the profile.")
-				else:
-					raise CandidateException("'" + lname + "'" + " key or value is missing from the profile." \
-					+ " Please do provide a " + lname )
+					+ " Please do provide a candidate name.")
 			else:
 				raise CandidateException("Candidature json is INVALID. Please post a correctly formatted JSON profile. {}"\
 					.format(properties.SAMPLE_API_REF))

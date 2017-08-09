@@ -37,3 +37,10 @@ class DBException(Exception):
 		super(DBException, self).__init__(message)
 		self.message = message
 		print(self.__class__.__name__ , self.message)
+
+
+class AuthenticationException(Exception):
+	def __init__(self, message):
+		super(AuthenticationException, self).__init__(message)
+		self.message = message
+		print(self.__class__.__name__ , self.message)

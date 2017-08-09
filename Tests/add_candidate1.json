@@ -1,0 +1,23 @@
+{
+	"name": "John W. Mandal",
+	"experience": [{
+			"domain": "Data Analytics",
+			"years": 2.5,
+			"projects": [{
+				"name": "White walkers",
+				"description": "Analyze number of white walkers",
+				"start_date": "January-2016"
+			}]
+		},
+		{
+			"domain": "Cloud Computing",
+			"years": 2,
+			"projects": [{
+				"name": "Lifecycle service",
+				"description": "REST interface for lifecycle operations.",
+				"start_date": "January-2013",
+				"end_date": "December-2015"
+			}]
+		}
+	]
+}

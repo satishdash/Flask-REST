@@ -42,7 +42,7 @@ class Projects(object):
 						pass
 					else:
 						raise ProjectException(desc + " key is missing from this project "
-						+ "or value is empty. {}".format(p))
+						+ "or value is empty. Value={}".format(p))
 
 					if p.get(start_date):
 						try:

@@ -3,7 +3,7 @@
 ##################################################################################################
 # 
 # A flask application server with defined web routes.
-# [ REST based recruiter data store system]
+# [ REST based recruiter data store application ]
 #
 # @author : Satish Dash
 #
@@ -15,7 +15,7 @@ import sys
 import uuid
 from threading import RLock
 import uuid
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, url_for
 
 from error import Error
 
@@ -24,6 +24,7 @@ from db.dbconnect import MongoDB
 from exceptions.exception import CandidateException , ExperienceException, ProjectException
 from models.candidate import Candidate
 from models.experience import Experience
+from token import Token
 
 # app variable to run this as a flask application
 app = Flask(__name__)
@@ -33,7 +34,7 @@ app = Flask(__name__)
 @app.route("/")
 @app.route("/home")
 def root():
-	d = {"message": "Welcome! This is a flask web server"}
+	d = {"message": "Welcome! This is a (python) FLASK web server."}
 	return jsonify(d)
 
 
@@ -62,7 +63,7 @@ def addCandidate():
 						auto = str(uuid.uuid4().int >> 64)
 				body["_id"] = str(auto)
 				candidateCol.insert_one(body)
-				response["message"] = "Requested profile is successfully added to the candidate entitlement."
+				response["message"] = "Requested profile is SUCCESSFULLY added to the candidate entitlement."
 				response["candidate_id"] = auto
 			else:
 				response["message"] = "Profile seems to be invalid. Needs correction(s). Please resend a valid profile."
@@ -98,7 +99,100 @@ def getAllCandidates():
 	else:
 		return jsonify(response), httpstatus.SUCCESS
 
+
 # route: GET /get-candidate?<string:candidate Name>&<string:domain>&<string:years>
+@app.route("/get-candidate")
+def getCandidate():
+	response = {"message" : None}
+	status = httpstatus.NOT_FOUND
+
+	# Check if any of these filters are provided
+	if request.args.get("candidate-name") \
+	or request.args.get("domain") \
+	or request.args.get("years"):
+		pass
+	else:
+		status = httpstatus.BAD_REQUEST
+		response["message"] = "Please pass in appropriate candidate filters for obtaining information."\
+		+" Allowed filters are: 'candidate-name', <'domain', 'years'>, "
+		+ "'total-exp.'"
+		+ "['years', 'total-exp' will be checked for a greater than or an equal to match ONLY],"
+		+ "['domain', 'years' must be passed together if so passed as filter. Either one is not allowed.]"
+	
+	# Collect the parameter values
+	name = "^" + request.args.get("candidate-name").strip() + "$"
+	domain = "^" + request.args.get("domain").strip() + "$"
+	years = request.args.get("years").strip()
+	total_years = request.args.get("total-exp").strip()
+	query = []
+	mongodb = None
+	if name:
+		query.append({"name" : {"$regex":name, "$options":"i"}})
+	if domain:
+		if years:
+			try:
+				y = float(years)
+			except:
+				status = httpstatus.BAD_REQUEST
+				response["message"] = "Years mentioned is in incorrect format, Value passed"\
+				+ "={}. Must be a number".format(years)
+				return jsonify(response), status
+			else:
+				query.append({"experience" : {"$elemMatch" : {"domain": {"$regex":domain, "$options":"i"}\
+					, "years":{"$gte":float(years)}}}})
+		else:
+			status = httpstatus.BAD_REQUEST
+			response["message"] = "<domain> and <years> filter must be passed together."
+			return jsonify(response), status
+	if total_years:
+		try:
+			total = float(total_years)
+		except:
+			status = httpstatus.BAD_REQUEST
+			response["message"] = "Total years of experience mentioned is in incorrect format, Value passed"\
+			+ "={}. Must be a number".format(total_years)
+			return jsonify(response), status
+		else:
+			idList = []
+			try:
+				mongodb = MongoDB()
+				candidateCol = mongodb.getCollection()
+				idList = list(candidateCol.aggregate({"$unwind":"$experience"},{"$group" : {"_id":"$_id"\
+					, "total":{"$sum":"$experience.years"}}},{"$match":{"total":{"$gte":float(total_years)}}}\
+					, {"$project":{"_id":1}}))
+				idList = [doc.items()[1] for doc in idList]
+			except Exception as e:
+				status = httpstatus.SERVER_ERROR
+				response["message"] = str(e.args) + ":" + " Internal server error has occurred."
+			else:
+				if idList:
+					query.append({"_id":{"$in":idList}})
+				else:
+					status = httpstatus.NOT_FOUND
+					response["message"] = "No such candidate profile exists where total experience is"\
+					" greater than or equal to {} years.".format(total_years)
+					return jsonify(response), status
+
+	# Indicates there is a query to be executed.
+	cur = None
+	try:
+		mongodb = MongoDB()
+		candidateCol = mongodb.getCollection()
+		cur = candidateCol.find({"$and":query})
+	except Exception as e:
+		status = httpstatus.SERVER_ERROR
+		response["message"] = str(e.args) + ":" + " Internal server error."
+	else:
+		if cur:
+			for c in cur:
+				response["items"].append(c)
+			status = httpstatus.SUCCESS
+			response["message"] = "Candidate profiles SUCCESSFULLY retrieved as requested."
+		else:
+			status - httpstatus.NOT_FOUND
+			response["message"] = "Candidate profiles doesn't exist for the applied filters."
+	return jsonify(response), status
+
 
 
 # route: POST /add-candidate-experience/<string: id>
@@ -136,7 +230,7 @@ def editCandidateExperience():
 			response["message"] = "'id' not available as a request parameter. "\
 			+ "Please provide a valid 'id' for modification."
 		
-	except ExperienceException as ee:
+	except (ExperienceException, ProjectException) as ee:
 		status = httpstatus.BAD_REQUEST
 		err= Error(ee.args[0], status)
 		return jsonify(err.serialize()), status
@@ -178,6 +272,25 @@ def removeCandidate():
 		return jsonify(err.serialize()), httpstatus.SERVER_ERROR
 	else:
 		return jsonify(response), status
+
+
+# route GET /list-apis. Lists all API's in this server
+@app.route("/list-apis")
+def listApis():
+	response = {"message": {"items":[]}}
+	response["message"]["items"].append({"add-candidate" : url_for('addCandidate') })
+	response["message"]["items"].append({"get-all-candidates" : url_for('getAllCandidates') })
+	response["message"]["items"].append({"get-candidate" : url_for('getCandidate') })
+	response["message"]["items"].append({"remove-candidate" : url_for('removeCandidate') })
+	response["message"]["items"].append({"edit-candidate-experience" : url_for('editCandidateExperience') })
+	response["message"]["items"].append({"list-apis" : url_for('listApis') })
+	response["message"]["items"].append({"auth" : url_for('authenticate')})
+	return jsonify(response), httpstatus.SUCCESS
+
+# route POST /auth . Authencticate to get a token for a given username/password
+@app.route("/auth", methods=["POST"])
+def authenticate():
+	return "Not implemented yet"
 
 if __name__ == "__main__":
 	app.debug = True

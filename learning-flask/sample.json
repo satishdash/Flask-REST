@@ -1,7 +1,6 @@
 {
 	"_comment":"DO NOT INCLUDE THIS KEY. This is a sample payload, below keys are mandatory.",
-	"first_name": "<candidate's-first-name>",
-	"last_name" : "<candidate's-last-name>",
+	"name": "<candidate's name>",
 	"experience" : [
 			{
 				"domain": "<domain name 1>",

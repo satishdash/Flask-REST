@@ -1,0 +1,23 @@
+{
+	"name": "Chandramohan Rangaswamy",
+	"experience": [{
+			"domain": "RESTful Services",
+			"years": 10,
+			"projects": [{
+				"name": "Lifecycle REST services",
+				"description": "REST api's for white walkers",
+				"start_date": "January-2011"
+			}]
+		},
+		{
+			"domain": "Web services",
+			"years": 7,
+			"projects": [{
+				"name": "Search engine developement",
+				"description": "REST developement for a search engine interface.",
+				"start_date": "January-2010",
+				"end_date": "December-2015"
+			}]
+		}
+	]
+}
