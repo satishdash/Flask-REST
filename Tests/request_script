@@ -11,6 +11,8 @@ curl -v -H 'Content-Type:application/json' -d @add_candidate2.json -X POST "http
 
 curl -v -H 'Content-Type:application/json' -d @add_candidate3.json -X POST "http://localhost:5000/add-candidate"
 
+curl -v -H 'Content-Type:application/json' -d @add_candidate4.json -X POST "http://localhost:5000/add-candidate"
+
 # Request to get all candidates
 curl -v -H 'Content-Type:application/json' "http://localhost:5000/get-all-candidates"
 
@@ -18,7 +20,8 @@ curl -v -H 'Content-Type:application/json' "http://localhost:5000/get-all-candid
 curl -v -H 'Content-Type:application/json' "http://localhost:5000/get-candidate?total-exp=11"
 
 # Request to get a candidate whose domain is 'web services' and experience in that domain 'years' is >= 5
-curl -v -H 'Content-Type:application/json' "http://localhost:5000/get-candidate?domain='web services'&years=5"
+curl -v -H 'Content-Type:application/json' "http://localhost:5000/get-candidate?domain=web%20services&years=5"
 
 # Request to edit an experience list of a candidate
-curl -v -H 'Content-Type:application/json' -d @edit_candidate_experience.json -X POST "http://localhost:5000/edit-candidate-experience"
+curl -v -H 'Content-Type:application/json' -d @edit_candidate_experience.json -X POST "http://localhost:5000/edit-candidate-experience?\
+id=<candidate-id>"
