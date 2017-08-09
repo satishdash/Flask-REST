@@ -1,1 +1,1 @@
-c:\program files\anaconda3
+C:\Program Files\Anaconda3
