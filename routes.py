@@ -11,23 +11,22 @@
 
 import json
 import os
+import random
 import sys
-import uuid
-from threading import RLock
 import uuid
 from flask import Flask, jsonify, request, url_for
 
-from error import Error
-
 import httpstatus
+from credential import Credential
 from db.dbconnect import MongoDB
+from error import Error
 from exceptions.exception import CandidateException , ExperienceException, ProjectException
 from models.candidate import Candidate
 from models.experience import Experience
 
-# app variable to run this as a flask application
+# App variable to run this as a flask application
 app = Flask(__name__)
-
+app.secret_key = str(uuid.uuid4())
 
 # route: GET /
 @app.route("/")
@@ -40,12 +39,14 @@ def root():
 # route: POST /add-candidate
 @app.route("/add-candidate", methods=["POST","GET"])
 def addCandidate():
+	resp = tokenValidator(request.args.get("token", None))
+	if resp:
+		return jsonify(resp[0]), resp[1]
 	if request.method == "POST":
 		# get json body sent in the request, comes as a dict.
 		body = request.get_json(force=True)
 
 		print("Request body: " , body, file=sys.stdout)
-		response = {"message" : None}
 		# Send body for validation
 		try:
 			candidate = Candidate(json.dumps(body))
@@ -77,8 +78,11 @@ def addCandidate():
 # route: GET /get-all-candidates
 @app.route("/get-all-candidates")
 def getAllCandidates():
-	response = {"message":{"items":None}}
+	response = {"message":None}
 	candidates = []
+	resp = tokenValidator(request.args.get("token", None))
+	if resp:
+		return jsonify(resp[0]), resp[1]
 	try:
 		mongodb = MongoDB()
 		candidateCol = mongodb.getCollection()
@@ -87,7 +91,8 @@ def getAllCandidates():
 		cur = candidateCol.find().sort([("_id", 1)])
 		for c in cur:
 			candidates.append(c)
-		response["message"]["items"] = candidates
+		response["items"] = candidates
+		response["message"] = "List of candidate profiles in the entitlement."
 	except Exception as e:
 		err = Error(e.args[0] + ": Internal server error has occurred.", httpstatus.SERVER_ERROR)
 		return jsonify(err.serialize()), httpstatus.SERVER_ERROR
@@ -104,6 +109,10 @@ def getCandidate():
 	domain =  request.args.get("domain", None)
 	years = request.args.get("years", None)
 	total_years = request.args.get("total-exp", None)
+
+	resp = tokenValidator(request.args.get("token", None))
+	if resp:
+		return jsonify(resp[0]), resp[1]
 
 	# Check if any of these filters are provided
 	if name or domain or years or total_years:
@@ -212,6 +221,10 @@ def getCandidate():
 def editCandidateExperience():
 	response = {"message":None}
 	status = httpstatus.NOT_FOUND
+
+	resp = tokenValidator(request.args.get("token", None))
+	if resp:
+		return jsonify(resp[0]), resp[1]
 	try:
 		body = request.get_json(force=True, silent=True)
 		if body:
@@ -260,6 +273,9 @@ def editCandidateExperience():
 def removeCandidate():
 	response = {"message":None}
 	status = httpstatus.NOT_FOUND
+	resp = tokenValidator(request.args.get("token", None))
+	if resp:
+		return jsonify(resp[0]), resp[1]
 	try:
 		# validate if args is present
 		if request.args.get("id"):
@@ -289,22 +305,67 @@ def removeCandidate():
 # route GET /list-apis. Lists all API's in this server
 @app.route("/list-apis")
 def listApis():
-	response = {"message": {"items":[]}}
-	response["message"]["items"].append({"add-candidate" : url_for('addCandidate') })
-	response["message"]["items"].append({"get-all-candidates" : url_for('getAllCandidates') })
-	response["message"]["items"].append({"get-candidate" : url_for('getCandidate') })
-	response["message"]["items"].append({"remove-candidate" : url_for('removeCandidate') })
-	response["message"]["items"].append({"edit-candidate-experience" : url_for('editCandidateExperience') })
-	response["message"]["items"].append({"list-apis" : url_for('listApis') })
-	response["message"]["items"].append({"auth" : url_for('authenticate')})
+	response = {"message": "List of REST end-points available in the server."}
+	response["items"] = []
+	response["items"].append({"add-candidate" : url_for('addCandidate') })
+	response["items"].append({"get-all-candidates" : url_for('getAllCandidates') })
+	response["items"].append({"get-candidate" : url_for('getCandidate') })
+	response["items"].append({"remove-candidate" : url_for('removeCandidate') })
+	response["items"].append({"edit-candidate-experience" : url_for('editCandidateExperience') })
+	response["items"].append({"list-apis" : url_for('listApis') })
+	response["items"].append({"auth" : url_for('authenticate')})
 	return jsonify(response), httpstatus.SUCCESS
 
 # route POST /auth . Authencticate to get a token for a given username/password
 @app.route("/auth", methods=["POST"])
 def authenticate():
-	return "Not implemented yet"
+	status = httpstatus.SUCCESS
+	response = {"message":None}
+	response["message"] = "Username and password are successfully validated. "\
+	"Please use the token for future API requests."
+	creds = request.headers.get("Authorization")
+	try:
+		if creds:
+			cr = Credential(creds)
+			if cr.isValid():
+				status = httpstatus.SUCCESS
+				response["message"] = "Authentication successfull !!!"
+				response["token"] = cr.getToken()
+				response["expiry-time-in-UTC"] = str(cr.getExpiryTime())
+				# Store the username in the sessions object to aid token based authentication
+				# for the cached user at one time.
+				print("Current user in session: " , cr.getUserName())
+			else:
+				status = httpstatus.UNAUTHORIZED
+				response["message"] = "Invalid credentials passed in the request. "\
+				"Please pass a valid credential base64 (UTF-8) encoded."
+		else:
+			status = httpstatus.BAD_REQUEST
+			response["message"] = "Basic authentication credentials are missing from the request. "\
+			"Please pass a valid base64 (UTF-8) encoded username:password in the 'Authorization' header."
+	except Exception as e:
+		print(e.args)
+		status = httpstatus.SERVER_ERROR
+		response["message"] = e.args[0]
+	return jsonify(response), status
+
+# Token validator function. Helper method for creating a response
+def tokenValidator(tokenString):
+	response = {"message" : None}
+	print("Token string passed in the request: ", tokenString)
+	if Credential.isTokenValid( tokenString):
+		print("Token is valid!")
+		pass
+	else:
+		print("Token is invalid/missing?")
+		status = httpstatus.UNAUTHORIZED
+		response["message"] = "Invalid token or token has expired or "\
+		+ "token parameter is missing in the request. "\
+		+ "Please provide a valid token or get a new token invoking GET "\
+		+ url_for("authenticate")
+		return response, status
+	return None
 
 if __name__ == "__main__":
 	app.debug = True
 	app.run(host="0.0.0.0", port=5000, threaded=True)
-

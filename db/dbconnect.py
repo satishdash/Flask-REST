@@ -42,13 +42,15 @@ class MongoDB(Borg):
 				self.conn = self.config.get("mongodb", "connection")
 				self.dbname = self.config.get("mongodb", "dbname")
 				self.collname = self.config.get("mongodb", "collname")
+				self.credcollname = self.config.get("mongodb", "credcollname")
+				self.tokencollname = self.config.get("mongodb", "tokencollname")
 				self.connection = self.conn.format(self.user, self.pwd, self.dbname)
 			except Exception as e:
 				print("exception: " + e.args[0]) 
 				raise DBException(str(e.args) + " Persistent storage configuration could not be formulated."
 				" Cannot proceed to get connection.")
 			try:
-				self.client = pm.MongoClient(self.connection, tz_aware=True)
+				self.client = pm.MongoClient(self.connection)#, tz_aware=True)
 				#  update the connection object in the state permanently
 				self._shared_state.update({"mongodb":self.client})
 			except Exception as e:
@@ -65,6 +67,18 @@ class MongoDB(Borg):
 		if self._shared_state.get("mongodb"):
 			return self.getConnection().get_collection(self.collname)
 		raise DBException("Connection to collection :{} in DB not available.".format(self.collname))
+
+	def getCredCollection(self):
+		if self._shared_state.get("mongodb"):
+			return self.getConnection().get_collection(self.credcollname)
+		raise DBException("Connection to collection :{} in DB not available.".format(self.credcollname))
+
+
+	def getTokenCollection(self):
+		if self._shared_state.get("mongodb"):
+			return self.getConnection().get_collection(self.tokencollname)
+		raise DBException("Connection to collection :{} in DB not available.".format(self.tokencollname))
+
 
 
 	def __str__(self):
