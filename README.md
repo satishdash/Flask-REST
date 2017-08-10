@@ -44,6 +44,7 @@ A flask based REST application <b>Recruiter data store</b> that has simple REST 
  	- `db password`
  	- `db name`
  	- `credential collection`
+ 	- `token collection name`
  	- `collection name`
 
 
