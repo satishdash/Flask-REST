@@ -49,7 +49,7 @@ A flask based REST application <b>Recruiter data store</b> that has simple REST 
 
 
 * Application Execution:
- * Start the server as `python routes.py`
+	- Start the server as `python routes.py`
 
 * List of REST end-points:
- * To get the list of available REST end-point(s) , send a GET request to: "http://hostname.domain:port/list-apis"
+ 	- To get the list of available REST end-point(s) , send a GET request to: "http://hostname.domain:port/list-apis"
