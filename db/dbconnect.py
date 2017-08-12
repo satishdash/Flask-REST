@@ -31,6 +31,7 @@ class MongoDB(Borg):
 	def __init__(self):
 		super(MongoDB, self).__init__()
 		if self._shared_state.get("mongodb"):
+			print("Connection to DB is already established!")
 			pass
 		else:
 			self.config = ConfigParser()
@@ -45,23 +46,34 @@ class MongoDB(Borg):
 				self.credcollname = self.config.get("mongodb", "credcollname")
 				self.tokencollname = self.config.get("mongodb", "tokencollname")
 				self.connection = self.conn.format(self.user, self.pwd, self.dbname)
+				print("Read configuration file: {}".format(ini_file))
 			except Exception as e:
 				print("exception: " + e.args[0]) 
 				raise DBException(str(e.args) + " Persistent storage configuration could not be formulated."
 				" Cannot proceed to get connection.")
 			try:
-				self.client = pm.MongoClient(self.connection)#, tz_aware=True)
+				self.client = pm.MongoClient(self.connection)
+				self.client.server_info()
+
 				#  update the connection object in the state permanently
 				self._shared_state.update({"mongodb":self.client})
+				print("Successfully created a connection object for MongoDB."\
+					+"Connection={}".format(self.client))
 			except Exception as e:
 				print(e.args[0])
-				raise DBException("Failed to setup/create a connection to MongoDB server.")
+				raise DBException("ERROR: Failed to establish a connection to MongoDB server.")
 
 
 	def getConnection(self):
-		if self._shared_state.get("mongodb"):
-			return self._shared_state["mongodb"].get_database(self.dbname)
-		raise DBException("Connection to persistent storage not available.")
+		conn = self._shared_state.get("mongodb")
+		if conn:
+			try :
+				conn.server_info()
+			except Exception as e:
+				raise DBException("ERROR: Connection to persistent storage not available.")
+			else:
+				return conn.get_database(self.dbname)
+		raise DBException("ERROR: Connection to persistent storage not available.")
 	
 	def getCollection(self):
 		if self._shared_state.get("mongodb"):

@@ -72,7 +72,7 @@ class Credential(object):
 			tokencollname = mongodb.getTokenCollection()
 		except Exception as e:
 			print(e.args)
-			raise DBException("ERROR: Connecting to the database.")
+			raise DBException("ERROR: Application failed to connect to the database.")
 		# Validate the token
 		if tokenString and tokenString.strip():
 			doc = tokencollname.find_one({"token": tokenString})
@@ -96,7 +96,7 @@ class Credential(object):
 			credcollname = mongodb.getCredCollection()
 		except Exception as e:
 			print(e.args)
-			raise DBException("ERROR: Connecting to the database.")
+			raise DBException("ERROR: Application failed to connect to the database.")
 		try:
 			# Get the encoded part from the credential string
 			actual = self.credentials.split()

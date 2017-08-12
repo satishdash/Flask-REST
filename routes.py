@@ -42,6 +42,7 @@ def addCandidate():
 	resp = tokenValidator(request.args.get("token", None))
 	if resp:
 		return jsonify(resp[0]), resp[1]
+	response= {}
 	if request.method == "POST":
 		# get json body sent in the request, comes as a dict.
 		body = request.get_json(force=True)
@@ -71,7 +72,7 @@ def addCandidate():
 			err = Error(exp.args[0], httpstatus.SERVER_ERROR)
 			return jsonify(err.serialize()), httpstatus.SERVER_ERROR
 			
-		return jsonify(response), httpstatus.SUCCESS
+		return jsonify(response), httpstatus.CREATED
 	elif request.method == "GET":
 		return jsonify(json.loads(open("sample.json").read())), httpstatus.SUCCESS
 
@@ -346,7 +347,8 @@ def authenticate():
 	except Exception as e:
 		print(e.args)
 		status = httpstatus.SERVER_ERROR
-		response["message"] = e.args[0]
+		err = Error(e.args[0], status)
+		return jsonify(err.serialize()), status
 	return jsonify(response), status
 
 # Token validator function. Helper method for creating a response
@@ -355,13 +357,12 @@ def tokenValidator(tokenString):
 	print("Token string passed in the request: ", tokenString)
 	if Credential.isTokenValid( tokenString):
 		print("Token is valid!")
-		pass
 	else:
 		print("Token is invalid/missing?")
 		status = httpstatus.UNAUTHORIZED
 		response["message"] = "Invalid token or token has expired or "\
 		+ "token parameter is missing in the request. "\
-		+ "Please provide a valid token or get a new token invoking GET "\
+		+ "Please provide a valid token or get a new token invoking POST "\
 		+ url_for("authenticate")
 		return response, status
 	return None
