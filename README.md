@@ -2,10 +2,10 @@
 A flask based REST application <b>Recruiter data store</b> that has simple REST end-points.
 
 * Pre-requisites:
- -> Install the required libraries mentioned in `requirements.txt`
- -> Install MongoDB >= 3.2
+ 1. Install the required libraries mentioned in `requirements.txt`
+ 2. Install MongoDB >= 3.2
 
- -> Set up access control in MongoDB for this REST based application.
+ 3. Set up access control in MongoDB for this REST based application.
 
  	- Create a `<REST user>` in a separate database, name the database for e.g. `flask`
  	  > E.g. Log into the mongo shell as `<root>` user created already during the installation phase
@@ -38,7 +38,7 @@ A flask based REST application <b>Recruiter data store</b> that has simple REST 
 
  	  > For other REST clients ensure to have a base64 encoding (UTF-8) of the `username:password` combination before POSTing to /auth.
 
- -> Edit the `dbconfig.ini` file under "db" with the required properties.
+ 4. Edit the `dbconfig.ini` file under "db" with the required properties.
  	- `mongodb url`
  	- `db username`
  	- `db password`
@@ -49,7 +49,7 @@ A flask based REST application <b>Recruiter data store</b> that has simple REST 
 
 
 * Application Execution:
- -> Start the server as `python routes.py`
+	- Start the server as `python routes.py`
 
 * List of REST end-points:
- -> To get the list of available REST end-point(s) , send a GET request to: "http://<hostname>.<domain>:<port>/list-apis"
+ 	- To get the list of available REST end-point(s) , send a GET request to: "http://hostname.domain:port/list-apis"
